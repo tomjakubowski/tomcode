@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
+// https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts
 // https://stackoverflow.com/questions/58479188/can-i-get-a-list-of-all-vscode-themes-installed
 const getAllThemes = () =>
   vscode.extensions.all.flatMap((ext) => {
@@ -29,34 +30,51 @@ const getAllThemes = () =>
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  // Use the console to output diagnostic information (console.log) and errors (console.error)
-  // This line of code will only be executed once when your extension is activated
-  console.log('Congratulations, your extension "tomcode" is now active!');
+  console.log("hello [tomcode]");
+  const config = vscode.workspace.getConfiguration();
 
-  // The command has been defined in the package.json file
-  // Now provide the implementation of the command with registerCommand
-  // The commandId parameter must match the command field in package.json
+  const setTheme = (name: string | undefined) => {
+    // TODO: Can we support "preview" for config?
+    // As used here (and in built-in theme picker) https://github.com/microsoft/vscode/blob/80bb443f663a70c45ef87ce44f3c68b3dee2b58e/src/vs/workbench/services/themes/common/themeConfiguration.ts#L327-L352
+    // Worst case, to fake "preview" we could just "remember" the original value (before the quickpick is shown),
+    // and restore the setting on cancel.
+    config.update(
+      "workbench.colorTheme",
+      name,
+      vscode.ConfigurationTarget.Workspace
+    );
+  };
   let disposable = vscode.commands.registerCommand(
     "tomcode.select-window-theme",
     async () => {
-      // The code you place here will be executed every time your command is executed
-      // Display a message box to the user
+      const currentTheme = config.get<string>("workbench.colorTheme");
+      const allThemes = getAllThemes().filter((v) => v !== currentTheme);
+      let result: "selected" | null = null;
 
-      // set it to "Edge Dark" as POC
-      const activeTheme = vscode.window.activeColorTheme;
-      const config = vscode.workspace.getConfiguration();
-      const theme = config.get("workbench.colorTheme");
-      console.log("current theme is", theme);
-      const allThemes = getAllThemes();
-      const newTheme = await vscode.window.showQuickPick(allThemes, {
-        canPickMany: false,
-      });
-      console.log("chose", newTheme);
-      config.update(
-        "workbench.colorTheme",
-        newTheme,
-        vscode.ConfigurationTarget.Workspace
+      // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts#L159
+      const qp = vscode.window.createQuickPick();
+      qp.canSelectMany = false;
+      qp.items = allThemes.map((name) => ({ label: name }));
+      const pick = new Promise<vscode.QuickPickItem>((resolve) =>
+        qp.onDidAccept((_) => {
+          const themeItem = qp.selectedItems[0];
+          result = "selected";
+          qp.hide();
+          resolve(themeItem);
+        })
       );
+      qp.onDidChangeActive((themes) => {
+        setTheme(themes[0].label);
+      });
+      qp.onDidHide((_) => {
+        if (result === null) {
+          console.log("You got canceled!");
+          setTheme(currentTheme);
+        }
+      });
+      qp.show();
+      const newTheme = (await pick).label;
+      setTheme(newTheme);
     }
   );
 
