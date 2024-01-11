@@ -53,6 +53,8 @@ export function activate(context: vscode.ExtensionContext) {
 
       // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts#L159
       const qp = vscode.window.createQuickPick();
+      qp.title = "[tomcode] Select workspace theme";
+      qp.placeholder = "type a theme name…";
       qp.canSelectMany = false;
       qp.items = allThemes.map((name) => ({ label: name }));
       const pick = new Promise<vscode.QuickPickItem>((resolve) =>
@@ -68,7 +70,6 @@ export function activate(context: vscode.ExtensionContext) {
       });
       qp.onDidHide((_) => {
         if (result === null) {
-          console.log("You got canceled!");
           setTheme(currentTheme);
         }
       });
