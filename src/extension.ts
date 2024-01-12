@@ -3,6 +3,8 @@
 import * as vscode from "vscode";
 import { commands, Uri } from "vscode";
 import { import_ } from "@brillout/import";
+import * as ts from "typescript";
+import { emit } from "process";
 
 // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts
 // https://stackoverflow.com/questions/58479188/can-i-get-a-list-of-all-vscode-themes-installed
@@ -91,6 +93,50 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  function doTypescript() {
+    let program = ts.createProgram({
+      rootNames: ["/Users/tom/tomcode.ts"],
+      // TODO: merge with our tsconfig.json (or a "standard" tsconfig.json which is compatible w/ vscode extension API surface)
+      // TODO: make "vscode" import work.  maybe allow for a package.json in ~/.vscode/init/.  lol.
+      options: {
+        target: ts.ScriptTarget.ES5,
+        module: ts.ModuleKind.CommonJS,
+        noEmitOnError: true,
+        noImplicitAny: true,
+      },
+    });
+    let emitResult = program.emit();
+    let allDiagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .concat(emitResult.diagnostics);
+
+    allDiagnostics.forEach((diagnostic) => {
+      if (diagnostic.file) {
+        let { line, character } = ts.getLineAndCharacterOfPosition(
+          diagnostic.file,
+          diagnostic.start!
+        );
+        let message = ts.flattenDiagnosticMessageText(
+          diagnostic.messageText,
+          "\n"
+        );
+        console.log(
+          `${diagnostic.file.fileName} (${line + 1},${
+            character + 1
+          }): ${message}`
+        );
+      } else {
+        console.log(
+          ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")
+        );
+      }
+    });
+
+    let exitCode = emitResult.emitSkipped ? 1 : 0;
+    console.log("emitResult", emitResult);
+    console.log("files emitted:", emitResult.emittedFiles?.length);
+  }
+
   disposable = vscode.commands.registerCommand(
     "tomcode.eval-tomcode.js",
     async () => {
@@ -107,6 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
       delete require.cache[require.resolve(commonjs)];
       let home2 = require(commonjs);
       console.log(home2);
+      doTypescript();
     }
   );
 }
