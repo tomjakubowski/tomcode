@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { commands, Uri } from "vscode";
+import { import_ } from "@brillout/import";
 
 // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts
 // https://stackoverflow.com/questions/58479188/can-i-get-a-list-of-all-vscode-themes-installed
@@ -87,6 +88,25 @@ export function activate(context: vscode.ExtensionContext) {
     async () => {
       let uri = Uri.file("/Users/tom/projects/tomcode");
       let success = await commands.executeCommand("vscode.openFolder", uri);
+    }
+  );
+
+  disposable = vscode.commands.registerCommand(
+    "tomcode.eval-tomcode.js",
+    async () => {
+      // TODO: Make .mjs work
+      // TODO: make .ts work!!! (compile to js in-memory? to a temp dir? no se)
+      // bypass tsc compiling `import()` of our module to commonjs import
+      // https://github.com/microsoft/TypeScript/issues/43329
+      // const _importDynamic = new Function(
+      //   "modulePath",
+      //   "return import(modulePath)"
+      // );
+      // let home = await import_("/Users/tom/tomcode.mjs");
+      const commonjs = "/Users/tom/tomcode.js";
+      delete require.cache[require.resolve(commonjs)];
+      let home2 = require(commonjs);
+      console.log(home2);
     }
   );
 }
