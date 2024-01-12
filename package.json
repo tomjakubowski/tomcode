@@ -31,7 +31,7 @@
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
     "package": "mkdir -p dist && vsce package -o dist/tomcode.vsix --yarn",
-    "install:local": "yarn package && code --install-extension dist/tomcode.vsix --force"
+    "deploy:local": "yarn package && code --install-extension dist/tomcode.vsix --force"
   },
   "devDependencies": {
     "@types/vscode": "^1.85.0",
