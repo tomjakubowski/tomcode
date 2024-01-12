@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import { commands, Uri } from "vscode";
 
 // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts
 // https://stackoverflow.com/questions/58479188/can-i-get-a-list-of-all-vscode-themes-installed
@@ -80,6 +81,14 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(disposable);
+
+  disposable = vscode.commands.registerCommand(
+    "tomcode.edit-self",
+    async () => {
+      let uri = Uri.file("/Users/tom/projects/tomcode");
+      let success = await commands.executeCommand("vscode.openFolder", uri);
+    }
+  );
 }
 
 // This method is called when your extension is deactivated

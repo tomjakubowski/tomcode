@@ -2,6 +2,18 @@
 
 my personal vscode extension
 
+## Setup
+
+To build the extension and install it to your local vscode:
+
+```
+yarn
+yarn install:local
+```
+
+To develop the extension, best to open this directory and use `<F5>`
+to launch an extension host, which you can step-debug and everything.
+
 ## License
 
 there is no license. if you're not me, stop reading!
@@ -18,7 +30,7 @@ No requirements
 
 This extension contributes the following settings:
 
-- `tomcode.thing`: Set to `blah` to do something.
+- `tomcode.thing`: Set to `blah` to do something
 
 ## Known Issues
 

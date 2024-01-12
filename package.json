@@ -14,12 +14,12 @@
   "contributes": {
     "commands": [
       {
-        "command": "tomcode.helloWorld",
-        "title": "[tomcode] Hello World"
-      },
-      {
         "command": "tomcode.select-window-theme",
         "title": "[tomcode] Select workspace theme"
+      },
+      {
+        "command": "tomcode.edit-self",
+        "title": "[tomcode] Edit tomcode"
       }
     ]
   },
