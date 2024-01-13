@@ -2,9 +2,14 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { commands, Uri } from "vscode";
-import { import_ } from "@brillout/import";
 import * as ts from "typescript";
-import { emit } from "process";
+
+let initSubs: {
+  /**
+   * Function to clean up resources.
+   */
+  dispose(): any;
+}[] = [];
 
 // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts
 // https://stackoverflow.com/questions/58479188/can-i-get-a-list-of-all-vscode-themes-installed
@@ -93,6 +98,15 @@ export function activate(context: vscode.ExtensionContext) {
       let success = await commands.executeCommand("vscode.openFolder", uri);
     }
   );
+  context.subscriptions.push(disposable);
+
+  disposable = vscode.commands.registerCommand(
+    "tomcode.breakpoint-test",
+    async () => {
+      // left blank for breakpoint
+    }
+  );
+  context.subscriptions.push(disposable);
 
   function doTypescript() {
     let program = ts.createProgram({
@@ -154,13 +168,27 @@ export function activate(context: vscode.ExtensionContext) {
       delete require.cache[require.resolve(commonjs)];
       let home2 = require(commonjs);
       console.log(home2);
+      // deregister any previous subscriptions
+      const waiters = [];
+      for (let sub of initSubs) {
+        console.log("disposing of something", sub);
+        const res = sub.dispose();
+        if (res instanceof Promise) {
+          console.log("yuck, it was async");
+          waiters.push(res);
+        }
+      }
+      console.log("awaiting async disposals");
+      await Promise.all(waiters);
+
+      console.log("clearing initSubs, ready to call activate");
+      initSubs = [];
       if ("activate" in home2) {
-        home2.activate(context);
+        home2.activate(context, initSubs);
       }
       // TODO: create a subscriptions list like context.subscriptions, but just for
       // tomcode.js, so that we can dispose of the stuff in it when reloading
       // (to e.g. de-register commands)
-      context.subscriptions;
       // TODO: this has a side effect of overwriting tomcode.js
       // which is bad lol.  so learn how to fix that before uncommenting
       // doTypescript();
