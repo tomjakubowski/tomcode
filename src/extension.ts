@@ -35,9 +35,9 @@ const getAllThemes = () =>
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   console.log("hello [tomcode]");
-  const config = vscode.workspace.getConfiguration();
 
   const setTheme = (name: string | undefined) => {
+    const config = vscode.workspace.getConfiguration();
     // TODO: Can we support "preview" for config?
     // As used here (and in built-in theme picker) https://github.com/microsoft/vscode/blob/80bb443f663a70c45ef87ce44f3c68b3dee2b58e/src/vs/workbench/services/themes/common/themeConfiguration.ts#L327-L352
     // Worst case, to fake "preview" we could just "remember" the original value (before the quickpick is shown),
@@ -51,13 +51,14 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "tomcode.select-window-theme",
     async () => {
+      const config = vscode.workspace.getConfiguration();
       const currentTheme = config.get<string>("workbench.colorTheme");
       const allThemes = getAllThemes().filter((v) => v !== currentTheme);
       let result: "selected" | null = null;
 
       // https://github.com/microsoft/vscode/blob/c72ffc8cd8fe11f6708f34129741d5fecf6dee5a/src/vs/workbench/contrib/themes/browser/themes.contribution.ts#L159
       const qp = vscode.window.createQuickPick();
-      qp.title = "[tomcode] Select workspace theme";
+      qp.title = "[tomcode] select workspace theme";
       qp.placeholder = "type a theme name…";
       qp.canSelectMany = false;
       qp.items = allThemes.map((name) => ({ label: name }));
@@ -153,7 +154,16 @@ export function activate(context: vscode.ExtensionContext) {
       delete require.cache[require.resolve(commonjs)];
       let home2 = require(commonjs);
       console.log(home2);
-      doTypescript();
+      if ("activate" in home2) {
+        home2.activate(context);
+      }
+      // TODO: create a subscriptions list like context.subscriptions, but just for
+      // tomcode.js, so that we can dispose of the stuff in it when reloading
+      // (to e.g. de-register commands)
+      context.subscriptions;
+      // TODO: this has a side effect of overwriting tomcode.js
+      // which is bad lol.  so learn how to fix that before uncommenting
+      // doTypescript();
     }
   );
 }

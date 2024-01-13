@@ -15,15 +15,18 @@
     "commands": [
       {
         "command": "tomcode.select-window-theme",
-        "title": "[tomcode] Select workspace theme"
+        "title": "select workspace theme",
+        "category": "tomcode"
       },
       {
         "command": "tomcode.edit-self",
-        "title": "[tomcode] Edit tomcode"
+        "title": "open tomcode in editor",
+        "category": "tomcode"
       },
       {
         "command": "tomcode.eval-tomcode.js",
-        "title": "[tomcode] evaluate tomcode.js"
+        "title": "evaluate tomcode.js",
+        "category": "tomcode"
       }
     ]
   },
