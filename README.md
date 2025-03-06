@@ -4,11 +4,11 @@ my personal vscode extension
 
 ## Setup
 
-To build the extension and install it to your local vscode:
+To build the extension and deploy it to your local vscode:
 
 ```
 yarn
-yarn install:local
+yarn deploy:local
 ```
 
 To develop the extension, best to open this directory and use `<F5>`
