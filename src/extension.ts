@@ -156,41 +156,33 @@ export function activate(context: vscode.ExtensionContext) {
     "tomcode.eval-tomcode.js",
     async () => {
       // TODO: Make .mjs work
-      // TODO: make .ts work!!! (compile to js in-memory? to a temp dir? no se)
-      // bypass tsc compiling `import()` of our module to commonjs import
       // https://github.com/microsoft/TypeScript/issues/43329
-      // const _importDynamic = new Function(
-      //   "modulePath",
-      //   "return import(modulePath)"
-      // );
+      // using @brillout/import
       // let home = await import_("/Users/tom/tomcode.mjs");
+      // remove any existing module from cache, then require it
+
       const commonjs = "/Users/tom/tomcode.js";
       delete require.cache[require.resolve(commonjs)];
+
       let home2 = require(commonjs);
       console.log(home2);
+
       // deregister any previous subscriptions
       const waiters = [];
       for (let sub of initSubs) {
-        console.log("disposing of something", sub);
         const res = sub.dispose();
         if (res instanceof Promise) {
-          console.log("yuck, it was async");
           waiters.push(res);
         }
       }
-      console.log("awaiting async disposals");
       await Promise.all(waiters);
 
-      console.log("clearing initSubs, ready to call activate");
       initSubs = [];
       if ("activate" in home2) {
         home2.activate(context, initSubs);
       }
-      // TODO: create a subscriptions list like context.subscriptions, but just for
-      // tomcode.js, so that we can dispose of the stuff in it when reloading
-      // (to e.g. de-register commands)
-      // TODO: this has a side effect of overwriting tomcode.js
-      // which is bad lol.  so learn how to fix that before uncommenting
+      // FIXME: this has a side effect of overwriting tomcode.js
+      // which is bad lol.  so, fix that before uncommenting!
       // doTypescript();
     }
   );
