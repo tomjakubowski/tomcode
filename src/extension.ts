@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { commands, Uri } from "vscode";
 import * as ts from "typescript";
 
+import { execFile } from "node:child_process";
+
 let initSubs: {
   /**
    * Function to clean up resources.
@@ -106,6 +108,25 @@ export function activate(context: vscode.ExtensionContext) {
       // left blank for breakpoint
     }
   );
+  context.subscriptions.push(disposable);
+
+  disposable = vscode.commands.registerCommand("tomcode.cowsay", async () => {
+    const input =
+      (await vscode.window.showInputBox({
+        title: "cowsay",
+        prompt: "Text for cow to say",
+      })) || "";
+    const { resolve, reject, promise } = Promise.withResolvers<string>();
+    execFile("cowsay", [input], (err, stdout) => {
+      if (err) reject(err);
+      else resolve(stdout);
+    });
+    const cowsaid = await promise;
+    const editor = vscode.window.activeTextEditor;
+    editor?.edit((edit) => {
+      edit.insert(editor.selection.active, cowsaid);
+    });
+  });
   context.subscriptions.push(disposable);
 
   function doTypescript() {

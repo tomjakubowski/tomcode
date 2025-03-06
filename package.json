@@ -37,6 +37,11 @@
         "command": "tomcode.placeholder",
         "title": "COMMAND GOES HERE",
         "category": "tomcode"
+      },
+      {
+        "command": "tomcode.cowsay",
+        "title": "cowsay",
+        "category": "tomcode"
       }
     ]
   },
